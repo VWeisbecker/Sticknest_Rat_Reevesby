@@ -6,8 +6,8 @@ library(rstudioapi) #  Access the RStudio API
 setwd(dirname(getActiveDocumentContext()$path))
 
 #reading in data 
-read_excel ("Reevesby vegetation and stick nest rats.xlsx", sheet=1)-> Reevesbypointintercept
-read_excel ("Reevesby vegetation and stick nest rats.xlsx", sheet=3)-> Reevesbycuticle
+read_excel ("Supp2_Reevesby vegetation and stick nest rats.xlsx", sheet=1)-> Reevesbypointintercept
+read_excel ("Supp2_Reevesby vegetation and stick nest rats.xlsx", sheet=3)-> Reevesbycuticle
 
 
 
@@ -23,7 +23,7 @@ interceptcount <- Reevesbypointintercept %>%
 Reevesbycuticle %>% dplyr::select(Plotname = `Plot Name`, Samplecount = `sample count` , Species) %>% group_by(Plotname, Species) %>% summarise (Count = sum(Samplecount)) %>% 
   filter(!is.na(Species)) -> cuticlecount
 
-#Just looking at 9001 because that is the plot where all Leporillus activity was.
+#Plot 9001 is Plot 1 in the paper
 interceptcount %>% filter(Plotname==9001) %>% .$Count %>% set_names(filter(interceptcount,Plotname==9001)$Species) -> interceptcount9001
 
 interceptcount9001[sort(names(interceptcount9001))] -> interceptcount9001
@@ -55,6 +55,15 @@ library(adehabitatHS)
 widesI(cuticlecount9001, interceptcount9001, avknown = FALSE, alpha = 0.05) -> results9001
 summary(results9001)
 print(results9001)
+
+#Make output table from results output (which I can't get out in one go) and round all values to 3 decimals
+
+table2 <- round(cbind(results9001$used.prop, results9001$avail.prop, results9001$wi, results9001$se.wi, results9001$chisquwi$p),3)
+
+
+
+write.csv(table2, file="C:/Workspace/Staff&Students/Annie/ms_revisions/REVISION/SUBMISSION/results_plot1.csv")
+
 
 library(gt)
 library(broom)
@@ -101,7 +110,7 @@ ggplot(plot_df2, aes(y = Species, x = wi)) +
 
 #Fig. 5 - Selection ratio
 
-#computing conficence interval as CI=mean+se*qnorm(0.975) [https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error/512794]
+#computing confidence interval as CI=mean+se*qnorm(0.975) [https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error/512794]
 
 
 plot_df2 <- bind_cols(results9001[5:6], Species = names(results9001[[1]]))
